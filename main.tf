@@ -7,3 +7,9 @@ module "vpc" {
   private_subnet_cidr = var.private_subnet_cidr
   availability_zone   = var.availability_zone
 }
+
+module "keypair" {
+  source = "./module/keypair"
+
+  project_name = var.project_name
+}
