@@ -28,3 +28,19 @@ variable "allowed_cidr" {
   description = "CIDR allowed to access Jenkins and SSH"
   type        = string
 }
+
+variable "domain_name" {
+  description = "Base Route53 domain"
+  type        = string
+}
+
+variable "jenkins_subdomain" {
+  description = "Subdomain for Jenkins"
+  type        = string
+  default     = "jenkins"
+}
+
+variable "alb_subnet_ids" {
+  description = "Public subnet IDs for the Jenkins Application Load Balancer"
+  type        = list(string)
+}

@@ -44,3 +44,21 @@ variable "allowed_cidr" {
   description = "CIDR allowed to access management services"
   type        = string
 }
+
+variable "public_subnet_2_cidr" {
+  description = "CIDR block for the second public subnet"
+  type        = string
+  default     = "10.0.3.0/24"
+}
+
+variable "private_subnet_2_cidr" {
+  description = "CIDR block for the second private subnet"
+  type        = string
+  default     = "10.0.4.0/24"
+}
+
+variable "availability_zone_2" {
+  description = "Second availability zone"
+  type        = string
+  default     = "eu-west-3b"
+}

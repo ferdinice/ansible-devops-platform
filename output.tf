@@ -24,6 +24,6 @@ output "jenkins_public_dns" {
 }
 
 output "jenkins_url" {
-  description = "Jenkins web interface"
-  value       = "http://${module.jenkins.jenkins_public_ip}:8080"
+  description = "Secure Jenkins URL"
+  value       = "https://jenkins.ferdeve.fit"
 }
