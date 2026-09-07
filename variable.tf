@@ -39,3 +39,8 @@ variable "availability_zone" {
   type        = string
   default     = "eu-west-3a"
 }
+
+variable "allowed_cidr" {
+  description = "CIDR allowed to access management services"
+  type        = string
+}
