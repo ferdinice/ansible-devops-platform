@@ -34,3 +34,13 @@ output "public_subnet_id" {
 output "private_subnet_id" {
   value = module.vpc.private_subnet_id
 }
+
+output "sonarqube_url" {
+  description = "Secure SonarQube URL"
+  value       = "https://sonarqube.ferdeve.fit"
+}
+
+output "sonarqube_instance_id" {
+  description = "SonarQube EC2 instance ID"
+  value       = module.sonarqube.sonarqube_instance_id
+}
