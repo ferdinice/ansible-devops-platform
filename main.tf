@@ -38,3 +38,21 @@ module "jenkins" {
   ]
 }
 
+module "nexus" {
+  source = "./module/nexus"
+
+  project_name = var.project_name
+  vpc_id       = module.vpc.vpc_id
+
+  subnet_id = module.vpc.public_subnet_id
+
+  alb_subnet_ids = [
+    module.vpc.public_subnet_id,
+    module.vpc.public_subnet_2_id
+  ]
+
+  key_name = module.keypair.key_name
+
+  domain_name     = "ferdeve.fit"
+  nexus_subdomain = "nexus"
+}

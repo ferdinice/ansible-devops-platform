@@ -27,3 +27,13 @@ output "jenkins_url" {
   description = "Secure Jenkins URL"
   value       = "https://jenkins.ferdeve.fit"
 }
+
+output "nexus_url" {
+  description = "Secure Nexus URL"
+  value       = module.nexus.nexus_url
+}
+
+output "nexus_instance_id" {
+  description = "Nexus EC2 instance ID"
+  value       = module.nexus.nexus_instance_id
+}
