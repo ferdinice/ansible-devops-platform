@@ -13,7 +13,7 @@ output "nexus_public_ip" {
   value       = aws_instance.nexus.public_ip
 }
 
-output "nexus_url" {
-  description = "Secure Nexus URL"
-  value       = "https://${var.nexus_subdomain}.${var.domain_name}"
+output "target_group_arn" {
+  description = "Nexus target group ARN"
+  value       = aws_lb_target_group.nexus.arn
 }

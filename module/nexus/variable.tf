@@ -13,29 +13,18 @@ variable "subnet_id" {
   type        = string
 }
 
-variable "alb_subnet_ids" {
-  description = "Public subnet IDs for the Nexus ALB"
-  type        = list(string)
-}
-
 variable "key_name" {
   description = "EC2 key pair name"
   type        = string
-}
-
-variable "domain_name" {
-  description = "Base Route53 domain"
-  type        = string
-}
-
-variable "nexus_subdomain" {
-  description = "Nexus DNS subdomain"
-  type        = string
-  default     = "nexus"
 }
 
 variable "instance_type" {
   description = "EC2 instance type for Nexus"
   type        = string
   default     = "t3.medium"
+}
+
+variable "platform_alb_security_group_id" {
+  description = "Security group ID of the shared platform ALB"
+  type        = string
 }
