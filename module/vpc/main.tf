@@ -140,3 +140,52 @@ resource "aws_route_table_association" "private_2" {
   subnet_id      = aws_subnet.private_2.id
   route_table_id = aws_route_table.private_2.id
 }
+
+# ============================================================
+# NAT GATEWAY ELASTIC IP
+# ============================================================
+
+resource "aws_eip" "nat" {
+  domain = "vpc"
+
+  depends_on = [aws_internet_gateway.igw]
+
+  tags = {
+    Name    = "${var.project_name}-nat-eip"
+    Project = var.project_name
+  }
+}
+
+
+# ============================================================
+# NAT GATEWAY
+# ============================================================
+
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public.id
+
+  depends_on = [aws_internet_gateway.igw]
+
+  tags = {
+    Name    = "${var.project_name}-nat-gateway"
+    Project = var.project_name
+  }
+}
+
+
+# ============================================================
+# PRIVATE SUBNET INTERNET ROUTES
+# ============================================================
+
+resource "aws_route" "private_nat" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat.id
+}
+
+resource "aws_route" "private_2_nat" {
+  route_table_id         = aws_route_table.private_2.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat.id
+}

@@ -44,3 +44,33 @@ output "sonarqube_instance_id" {
   description = "SonarQube EC2 instance ID"
   value       = module.sonarqube.sonarqube_instance_id
 }
+
+output "ansible_instance_id" {
+  description = "Ansible controller EC2 instance ID"
+  value       = module.ansible.ansible_instance_id
+}
+
+output "ansible_private_ip" {
+  description = "Ansible controller private IP"
+  value       = module.ansible.ansible_private_ip
+}
+
+output "stage_url" {
+  description = "Stage application URL"
+  value       = "https://stage.ferdeve.fit"
+}
+
+output "prod_url" {
+  description = "Production application URL"
+  value       = "https://prod.ferdeve.fit"
+}
+
+output "stage_asg_name" {
+  description = "Stage Auto Scaling Group name"
+  value       = module.stage_env.autoscaling_group_name
+}
+
+output "prod_asg_name" {
+  description = "Production Auto Scaling Group name"
+  value       = module.prod_env.autoscaling_group_name
+}
