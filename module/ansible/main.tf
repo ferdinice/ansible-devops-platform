@@ -192,8 +192,7 @@ resource "aws_iam_role_policy" "ansible_parameter_access" {
           "ssm:GetParameter"
         ]
 
-        Resource = "arn:aws:ssm:eu-west-3:*:parameter/devops-platform/ssh/private-key"
-      }
+      Resource = var.ssh_private_key_parameter_arn }
     ]
   })
 }

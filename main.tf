@@ -189,8 +189,9 @@ module "ansible" {
   project_name = var.project_name
   vpc_id       = module.vpc.vpc_id
   subnet_id    = module.vpc.public_subnet_id
-}
 
+  ssh_private_key_parameter_arn = module.keypair.private_key_parameter_arn
+}
 # ============================================================
 # STAGE ENVIRONMENT
 # ============================================================

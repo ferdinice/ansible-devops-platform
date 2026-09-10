@@ -18,3 +18,8 @@ variable "instance_type" {
   type        = string
   default     = "t3.micro"
 }
+
+variable "ssh_private_key_parameter_arn" {
+  description = "ARN of the SSM parameter containing the SSH private key"
+  type        = string
+}
