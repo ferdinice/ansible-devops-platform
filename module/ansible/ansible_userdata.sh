@@ -146,6 +146,22 @@ chmod 600 /home/ubuntu/.ssh/id_rsa
 
 
 # ============================================================
+# CLONE ANSIBLE PLATFORM REPOSITORY
+# ============================================================
+
+echo "Cloning Ansible platform repository..."
+
+if [ ! -d /opt/ansible/repo/.git ]; then
+  git clone https://github.com/ferdinice/ansible-devops-platform.git /opt/ansible/repo
+else
+  git -C /opt/ansible/repo fetch origin
+  git -C /opt/ansible/repo reset --hard origin/main
+fi
+
+chown -R ubuntu:ubuntu /opt/ansible/repo
+
+
+# ============================================================
 # OWNERSHIP
 # ============================================================
 
@@ -162,7 +178,7 @@ cat > /etc/ansible/ansible.cfg <<'ANSIBLECFG'
 [defaults]
 host_key_checking = False
 inventory = /opt/ansible/inventory/aws_ec2.yml
-roles_path = /opt/ansible/roles
+roles_path = /opt/ansible/repo/module/ansible/roles
 retry_files_enabled = False
 interpreter_python = auto_silent
 
