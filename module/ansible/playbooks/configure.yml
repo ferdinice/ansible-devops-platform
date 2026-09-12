@@ -1,0 +1,8 @@
+---
+- name: Configure managed application nodes
+  hosts: "{{ target_env | default('stage') }}"
+  become: true
+  gather_facts: true
+
+  roles:
+    - common
