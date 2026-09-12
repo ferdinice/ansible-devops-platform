@@ -40,11 +40,6 @@ variable "availability_zone" {
   default     = "eu-west-3a"
 }
 
-variable "allowed_cidr" {
-  description = "CIDR allowed to access management services"
-  type        = string
-}
-
 variable "public_subnet_2_cidr" {
   description = "CIDR block for the second public subnet"
   type        = string

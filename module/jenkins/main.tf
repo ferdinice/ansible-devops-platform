@@ -37,15 +37,7 @@ resource "aws_security_group" "jenkins" {
   description = "Security group for Jenkins server"
   vpc_id      = var.vpc_id
 
-  # Temporary SSH access.
-  # We can remove this later because SSM is already available.
-  ingress {
-    description = "SSH access"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.allowed_cidr]
-  }
+
 
   # Jenkins UI/API may only be reached through the shared ALB.
   ingress {

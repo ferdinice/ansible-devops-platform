@@ -44,8 +44,6 @@ module "jenkins" {
   subnet_id    = module.vpc.public_subnet_id
   key_name     = module.keypair.key_name
 
-  allowed_cidr = var.allowed_cidr
-
   platform_alb_security_group_id = module.platform_alb.security_group_id
 }
 

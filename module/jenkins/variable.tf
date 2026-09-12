@@ -19,10 +19,6 @@ variable "instance_type" {
   default = "t3.medium"
 }
 
-variable "allowed_cidr" {
-  type = string
-}
-
 variable "platform_alb_security_group_id" {
   description = "Security group ID of the shared platform ALB"
   type        = string
