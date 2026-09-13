@@ -101,6 +101,25 @@ resource "aws_lb_listener_rule" "nexus" {
   }
 }
 
+# ============================================================
+# NEXUS DOCKER REGISTRY HOST-BASED ROUTING
+# ============================================================
+
+resource "aws_lb_listener_rule" "registry" {
+  listener_arn = module.platform_alb.listener_arn
+  priority     = 60
+
+  action {
+    type             = "forward"
+    target_group_arn = module.nexus.registry_target_group_arn
+  }
+
+  condition {
+    host_header {
+      values = ["registry.ferdeve.fit"]
+    }
+  }
+}
 
 # ============================================================
 # JENKINS DNS
@@ -126,6 +145,22 @@ resource "aws_route53_record" "jenkins" {
 resource "aws_route53_record" "nexus" {
   zone_id = module.platform_alb.hosted_zone_id
   name    = "nexus.ferdeve.fit"
+  type    = "A"
+
+  alias {
+    name                   = module.platform_alb.alb_dns_name
+    zone_id                = module.platform_alb.alb_zone_id
+    evaluate_target_health = true
+  }
+}
+
+# ============================================================
+# NEXUS DOCKER REGISTRY DNS
+# ============================================================
+
+resource "aws_route53_record" "registry" {
+  zone_id = module.platform_alb.hosted_zone_id
+  name    = "registry.ferdeve.fit"
   type    = "A"
 
   alias {

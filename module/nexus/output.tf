@@ -17,3 +17,8 @@ output "target_group_arn" {
   description = "Nexus target group ARN"
   value       = aws_lb_target_group.nexus.arn
 }
+
+output "registry_target_group_arn" {
+  description = "Nexus Docker registry target group ARN"
+  value       = aws_lb_target_group.registry.arn
+}
