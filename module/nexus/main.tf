@@ -142,7 +142,10 @@ resource "aws_instance" "nexus" {
 
   iam_instance_profile = aws_iam_instance_profile.nexus.name
 
-  user_data                   = file("${path.module}/nexus_userdata.sh")
+  user_data = join("\n", [
+    file("${path.module}/nexus_userdata.sh"),
+    file("${path.module}/nexus_bootstrap.sh")
+  ])
   user_data_replace_on_change = true
 
   root_block_device {
@@ -263,12 +266,13 @@ resource "aws_iam_role_policy" "nexus_registry_credentials" {
         Effect = "Allow"
 
         Action = [
+          "ssm:GetParameter",
           "ssm:PutParameter"
         ]
 
         Resource = [
-         "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/devops-platform/nexus/ci-writer-password",
-         "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/devops-platform/nexus/deploy-reader-password"
+          "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/devops-platform/nexus/ci-writer-password",
+          "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/devops-platform/nexus/deploy-reader-password"
         ]
       }
     ]
