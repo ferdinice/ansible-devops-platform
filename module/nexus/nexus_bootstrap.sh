@@ -63,15 +63,24 @@ echo "Nexus authentication initialized."
 
 echo "Checking Nexus EULA status..."
 
-EULA_ACCEPTED=$(
+EULA_RESPONSE=$(
   nexus_api \
-    "${NEXUS_URL}/service/rest/v1/system/eula" |
+    "${NEXUS_URL}/service/rest/v1/system/eula"
+)
+
+EULA_ACCEPTED=$(
+  printf '%s' "${EULA_RESPONSE}" |
     grep -o '"accepted"[[:space:]]*:[[:space:]]*[^,}]*' |
     grep -o 'true\|false'
 )
 
 if [[ "${EULA_ACCEPTED}" != "true" ]]; then
   echo "Accepting Nexus Community Edition EULA..."
+
+  EULA_PAYLOAD=$(
+    printf '%s' "${EULA_RESPONSE}" |
+      sed 's/"accepted"[[:space:]]*:[[:space:]]*false/"accepted" : true/'
+  )
 
   HTTP_CODE=$(
     curl --silent --show-error \
@@ -80,7 +89,7 @@ if [[ "${EULA_ACCEPTED}" != "true" ]]; then
       -u "admin:${ADMIN_PASSWORD}" \
       -X POST \
       -H "Content-Type: application/json" \
-      -d '{"accepted":true}' \
+      --data-binary "${EULA_PAYLOAD}" \
       "${NEXUS_URL}/service/rest/v1/system/eula"
   )
 
@@ -94,6 +103,9 @@ if [[ "${EULA_ACCEPTED}" != "true" ]]; then
 else
   echo "Nexus EULA already accepted."
 fi
+
+unset EULA_RESPONSE
+unset EULA_PAYLOAD
 
 
 # ============================================================
