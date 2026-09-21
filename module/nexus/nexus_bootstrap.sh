@@ -322,18 +322,31 @@ ensure_user() {
 
   local check_http
   check_http=$(
-    curl --silent \
+    curl --silent --show-error \
       -o "/tmp/${user_id}-check.json" \
       -w "%{http_code}" \
       -u "admin:${ADMIN_PASSWORD}" \
-      "${NEXUS_URL}/service/rest/v1/security/users/${user_id}"
+      --get \
+      --data-urlencode "userId=${user_id}" \
+      --data-urlencode "source=default" \
+      "${NEXUS_URL}/service/rest/v1/security/users"
   )
 
-  if [[ "${check_http}" == "200" ]]; then
+  if [[ "${check_http}" != "200" ]]; then
+    echo "ERROR: User ${user_id} lookup failed. HTTP ${check_http}"
+    cat "/tmp/${user_id}-check.json"
+    exit 1
+  fi
+
+  # The collection endpoint returns HTTP 200 even when no user matches.
+  # An exact userId match means the Nexus user already exists.
+  if grep -q "\"userId\"[[:space:]]*:[[:space:]]*\"${user_id}\"" \
+    "/tmp/${user_id}-check.json"; then
+
     echo "Nexus user ${user_id} already exists."
 
-    # Make sure the persisted SSM credential remains the actual
-    # password after any future bootstrap/rebuild.
+    # Keep the Nexus password synchronized with the credential
+    # persisted in SSM Parameter Store.
     local password_http
     password_http=$(
       curl --silent --show-error \
@@ -348,17 +361,12 @@ ensure_user() {
 
     if [[ "${password_http}" != "204" ]]; then
       echo "ERROR: Password synchronization failed for ${user_id}. HTTP ${password_http}"
+      cat "/tmp/${user_id}-password-response"
       exit 1
     fi
 
     echo "Credential synchronized for ${user_id}."
     return
-  fi
-
-  if [[ "${check_http}" != "404" ]]; then
-    echo "ERROR: User ${user_id} check returned HTTP ${check_http}"
-    cat "/tmp/${user_id}-check.json"
-    exit 1
   fi
 
   echo "Creating Nexus user ${user_id}..."

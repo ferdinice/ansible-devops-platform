@@ -16,7 +16,20 @@ apt-get install -y \
   openjdk-21-jre \
   wget \
   curl \
-  tar
+  tar \
+  unzip
+
+# Install AWS CLI v2 for SSM Parameter Store operations
+cd /tmp
+
+curl -fsSL \
+  "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" \
+  -o awscliv2.zip
+
+unzip -q awscliv2.zip
+./aws/install
+
+aws --version
 
 NEXUS_VERSION="3.80.0-06"
 NEXUS_USER="nexus"
