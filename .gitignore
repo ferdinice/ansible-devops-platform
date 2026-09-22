@@ -1,4 +1,3 @@
-cat > .gitignore <<'EOF'
 # Terraform working directories
 **/.terraform/*
 
@@ -6,6 +5,7 @@ cat > .gitignore <<'EOF'
 *.tfstate
 *.tfstate.*
 *.tfplan
+tfplan
 
 # Terraform crash logs
 crash.log
@@ -44,4 +44,3 @@ node_modules/
 
 # Logs
 *.log
-EOF
