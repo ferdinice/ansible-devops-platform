@@ -25,18 +25,7 @@ apt-get install -y \
   git \
   curl \
   unzip \
-  jq \
-  software-properties-common
-
-
-# ============================================================
-# INSTALL ANSIBLE
-# ============================================================
-
-apt-add-repository --yes --update ppa:ansible/ansible
-
-apt-get install -y ansible
-
+  jq
 
 # ============================================================
 # AWS CLI V2
@@ -56,19 +45,35 @@ rm -rf aws awscliv2.zip
 
 
 # ============================================================
-# PYTHON AWS DEPENDENCIES
-# Required by amazon.aws.aws_ec2 dynamic inventory
+# INSTALL ANSIBLE AND AWS PYTHON DEPENDENCIES
+# Keep Ansible and its AWS SDK dependencies in one isolated
+# Python environment.
 # ============================================================
 
-apt-get install -y python3-boto3 python3-botocore
+python3 -m venv /opt/ansible-venv
 
+/opt/ansible-venv/bin/pip install --upgrade pip
+
+/opt/ansible-venv/bin/pip install \
+  "ansible-core==2.21.4" \
+  "boto3>=1.35.0,<2.0.0" \
+  "botocore>=1.35.0,<2.0.0"
+
+ln -sf /opt/ansible-venv/bin/ansible /usr/local/bin/ansible
+ln -sf /opt/ansible-venv/bin/ansible-playbook /usr/local/bin/ansible-playbook
+ln -sf /opt/ansible-venv/bin/ansible-inventory /usr/local/bin/ansible-inventory
+ln -sf /opt/ansible-venv/bin/ansible-galaxy /usr/local/bin/ansible-galaxy
+ln -sf /opt/ansible-venv/bin/ansible-doc /usr/local/bin/ansible-doc
 
 # ============================================================
 # ANSIBLE AWS COLLECTION
 # ============================================================
 
-ansible-galaxy collection install amazon.aws
+ansible-galaxy collection install \
+  amazon.aws:==11.4.0 \
+  -p /usr/share/ansible/collections
 
+test -d /usr/share/ansible/collections/ansible_collections/amazon/aws
 
 # ============================================================
 # ANSIBLE DIRECTORY STRUCTURE
@@ -101,7 +106,7 @@ hostnames:
   - private-ip-address
 
 keyed_groups:
-  - key: tags.Environment
+  - key: ec2_tags.Environment
     prefix: ""
     separator: ""
 
