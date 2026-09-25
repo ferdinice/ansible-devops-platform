@@ -1,0 +1,28 @@
+---
+# Application
+app_name: pet-adoption
+app_container_name: pet-adoption
+app_container_port: 8080
+app_host_port: 8080
+
+# Nexus Docker registry
+app_registry: registry.ferdeve.fit
+app_registry_repository: pet-adoption-docker
+
+# Read-only Nexus deployment identity
+app_registry_username: nexus-deploy-reader
+app_registry_password_parameter: /devops-platform/nexus/deploy-reader-password
+
+# Image version must be supplied by the deployment pipeline.
+# Example:
+#   -e app_image_tag=build-42-a1b2c3d
+app_image_tag: ""
+
+app_image: >-
+  {{ app_registry }}/{{ app_registry_repository }}:{{ app_image_tag }}
+
+# AWS
+app_aws_region: eu-west-3
+
+# Container behaviour
+app_restart_policy: unless-stopped
