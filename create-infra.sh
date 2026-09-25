@@ -31,5 +31,3 @@ echo
 echo "========================================"
 echo " Infrastructure deployment completed."
 echo "========================================"
-
-terraform output
