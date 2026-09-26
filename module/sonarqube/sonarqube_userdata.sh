@@ -10,7 +10,7 @@ echo "========================================"
 
 export DEBIAN_FRONTEND=noninteractive
 
-SONAR_VERSION="25.5.0.107428"
+SONAR_VERSION="26.1.0.118079"
 SONAR_USER="sonaruser"
 SONAR_DIR="/opt/sonarqube"
 
@@ -32,7 +32,7 @@ SONAR_URL="https://binaries.sonarsource.com/Distribution/sonarqube/${SONAR_ZIP}"
 apt-get update -y
 
 apt-get install -y \
-  openjdk-17-jdk \
+  openjdk-21-jdk \
   unzip \
   wget \
   curl \
@@ -82,6 +82,9 @@ wget -O "${SONAR_ZIP}" "${SONAR_URL}"
 unzip "${SONAR_ZIP}"
 
 mv "sonarqube-${SONAR_VERSION}" "${SONAR_DIR}"
+
+# Ensure the Linux launcher is executable.
+chmod 0755 "${SONAR_DIR}/bin/linux-x86-64/sonar.sh"
 
 chown -R ${SONAR_USER}:${SONAR_USER} "${SONAR_DIR}"
 
