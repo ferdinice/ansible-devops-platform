@@ -71,9 +71,11 @@ ln -sf /opt/ansible-venv/bin/ansible-doc /usr/local/bin/ansible-doc
 
 ansible-galaxy collection install \
   amazon.aws:==11.4.0 \
+  community.docker:==5.3.0 \
   -p /usr/share/ansible/collections
 
 test -d /usr/share/ansible/collections/ansible_collections/amazon/aws
+test -d /usr/share/ansible/collections/ansible_collections/community/docker
 
 # ============================================================
 # ANSIBLE DIRECTORY STRUCTURE

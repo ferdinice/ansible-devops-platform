@@ -224,6 +224,8 @@ module "ansible" {
   subnet_id    = module.vpc.public_subnet_id
 
   ssh_private_key_parameter_arn = module.keypair.private_key_parameter_arn
+
+  nexus_deploy_reader_parameter_arn = "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/devops-platform/nexus/deploy-reader-password"
 }
 # ============================================================
 # STAGE ENVIRONMENT
@@ -341,3 +343,11 @@ resource "aws_route53_record" "prod" {
     evaluate_target_health = true
   }
 }
+# ============================================================
+# CURRENT AWS ACCOUNT / REGION
+# Used to construct least-privilege SSM parameter ARNs
+# ============================================================
+
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}

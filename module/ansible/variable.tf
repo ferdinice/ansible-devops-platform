@@ -23,3 +23,8 @@ variable "ssh_private_key_parameter_arn" {
   description = "ARN of the SSM parameter containing the SSH private key"
   type        = string
 }
+
+variable "nexus_deploy_reader_parameter_arn" {
+  description = "ARN of the SSM SecureString containing the Nexus deploy-reader password"
+  type        = string
+}

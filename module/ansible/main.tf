@@ -191,8 +191,11 @@ resource "aws_iam_role_policy" "ansible_parameter_access" {
         Action = [
           "ssm:GetParameter"
         ]
-
-      Resource = var.ssh_private_key_parameter_arn }
+        Resource = [
+          var.ssh_private_key_parameter_arn,
+          var.nexus_deploy_reader_parameter_arn
+        ]
+      }
     ]
   })
 }
