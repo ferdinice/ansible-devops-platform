@@ -1,0 +1,8 @@
+---
+- name: Deploy Pet Adoption application
+  hosts: "{{ target_env | default('stage') }}"
+  become: true
+  gather_facts: true
+
+  roles:
+    - app

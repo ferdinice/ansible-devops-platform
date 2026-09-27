@@ -1,0 +1,76 @@
+---
+- name: Validate application image tag
+  ansible.builtin.assert:
+    that:
+      - app_image_tag | length > 0
+    fail_msg: >-
+      app_image_tag is required.
+      Supply an immutable image tag such as build-42-a1b2c3d.
+
+- name: Retrieve Nexus deploy-reader password from SSM
+  ansible.builtin.command:
+    argv:
+      - aws
+      - ssm
+      - get-parameter
+      - --name
+      - "{{ app_registry_password_parameter }}"
+      - --with-decryption
+      - --region
+      - "{{ app_aws_region }}"
+      - --query
+      - Parameter.Value
+      - --output
+      - text
+  delegate_to: localhost
+  become: false
+  register: nexus_password
+  changed_when: false
+  no_log: true
+
+- name: Authenticate Docker to Nexus registry
+  community.docker.docker_login:
+    registry_url: "{{ app_registry }}"
+    username: "{{ app_registry_username }}"
+    password: "{{ nexus_password.stdout }}"
+    reauthorize: true
+  no_log: true
+
+- name: Pull requested application image
+  community.docker.docker_image:
+    name: "{{ app_image }}"
+    source: pull
+
+- name: Run application container
+  community.docker.docker_container:
+    name: "{{ app_container_name }}"
+    image: "{{ app_image }}"
+    state: started
+    restart_policy: "{{ app_restart_policy }}"
+    recreate: false
+    pull: never
+    published_ports:
+      - "{{ app_host_port }}:{{ app_container_port }}"
+
+- name: Wait for application port
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ app_host_port }}"
+    state: started
+    delay: 2
+    timeout: 60
+
+- name: Verify application health endpoint
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ app_host_port }}/actuator/health"
+    method: GET
+    status_code: 200
+    return_content: true
+  register: app_health
+  retries: 10
+  delay: 3
+  until: app_health.status == 200
+
+- name: Display deployed application version
+  ansible.builtin.debug:
+    msg: "Successfully deployed {{ app_image }}"
