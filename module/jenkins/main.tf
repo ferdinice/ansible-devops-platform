@@ -195,3 +195,47 @@ resource "aws_lb_target_group_attachment" "jenkins" {
   target_id        = aws_instance.jenkins.id
   port             = 8080
 }
+
+# ============================================================
+# JENKINS -> ANSIBLE SSM DEPLOYMENT PERMISSION
+# ============================================================
+
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
+resource "aws_iam_role_policy" "jenkins_ansible_deployment" {
+  name = "${var.project_name}-jenkins-ansible-deployment"
+  role = aws_iam_role.jenkins_ssm_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Sid    = "SendCommandToAnsibleController"
+        Effect = "Allow"
+
+        Action = [
+          "ssm:SendCommand"
+        ]
+
+        Resource = [
+          "arn:aws:ec2:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:instance/${var.ansible_instance_id}",
+          "arn:aws:ssm:${data.aws_region.current.region}::document/AWS-RunShellScript"
+        ]
+      },
+      {
+        Sid    = "ReadDeploymentCommandResult"
+        Effect = "Allow"
+
+        Action = [
+          "ssm:GetCommandInvocation",
+          "ssm:ListCommandInvocations"
+        ]
+
+        Resource = "*"
+      }
+    ]
+  })
+}

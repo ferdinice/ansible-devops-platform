@@ -74,3 +74,8 @@ output "prod_asg_name" {
   description = "Production Auto Scaling Group name"
   value       = module.prod_env.autoscaling_group_name
 }
+
+output "jenkins_instance_id" {
+  description = "Jenkins EC2 instance ID"
+  value       = module.jenkins.jenkins_instance_id
+}
