@@ -197,7 +197,7 @@ resource "aws_lb_target_group_attachment" "jenkins" {
 }
 
 # ============================================================
-# JENKINS -> ANSIBLE SSM DEPLOYMENT PERMISSION
+# JENKINS -> ANSIBLE DYNAMIC DISCOVERY AND SSM DEPLOYMENT
 # ============================================================
 
 data "aws_caller_identity" "current" {}
@@ -213,17 +213,42 @@ resource "aws_iam_role_policy" "jenkins_ansible_deployment" {
 
     Statement = [
       {
-        Sid    = "SendCommandToAnsibleController"
+        Sid    = "DiscoverAnsibleController"
+        Effect = "Allow"
+
+        Action = [
+          "ec2:DescribeInstances"
+        ]
+
+        Resource = "*"
+      },
+      {
+        Sid    = "SendCommandToTaggedAnsibleController"
         Effect = "Allow"
 
         Action = [
           "ssm:SendCommand"
         ]
 
-        Resource = [
-          "arn:aws:ec2:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:instance/${var.ansible_instance_id}",
-          "arn:aws:ssm:${data.aws_region.current.region}::document/AWS-RunShellScript"
+        Resource = "arn:aws:ec2:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:instance/*"
+
+        Condition = {
+          StringEquals = {
+            "ssm:resourceTag/Project"     = var.project_name
+            "ssm:resourceTag/Role"        = "ansible"
+            "ssm:resourceTag/Environment" = "management"
+          }
+        }
+      },
+      {
+        Sid    = "UseRunShellScriptDocument"
+        Effect = "Allow"
+
+        Action = [
+          "ssm:SendCommand"
         ]
+
+        Resource = "arn:aws:ssm:${data.aws_region.current.region}::document/AWS-RunShellScript"
       },
       {
         Sid    = "ReadDeploymentCommandResult"

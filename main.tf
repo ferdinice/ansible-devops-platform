@@ -46,7 +46,6 @@ module "jenkins" {
 
   platform_alb_security_group_id = module.platform_alb.security_group_id
 
-  ansible_instance_id = module.ansible.ansible_instance_id
 }
 
 

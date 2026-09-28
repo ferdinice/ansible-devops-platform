@@ -23,8 +23,3 @@ variable "platform_alb_security_group_id" {
   description = "Security group ID of the shared platform ALB"
   type        = string
 }
-
-variable "ansible_instance_id" {
-  description = "EC2 instance ID of the Ansible controller Jenkins may invoke through SSM"
-  type        = string
-}
