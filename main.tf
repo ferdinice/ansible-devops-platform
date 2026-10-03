@@ -320,7 +320,31 @@ module "prod_env" {
 
   key_name = module.keypair.key_name
 }
+# ============================================================
+# PROMETHEUS NODE EXPORTER ACCESS
+# ============================================================
 
+resource "aws_vpc_security_group_ingress_rule" "stage_node_exporter" {
+  security_group_id = module.stage_env.security_group_id
+
+  description                  = "Allow Prometheus to scrape stage Node Exporter"
+  referenced_security_group_id = module.prometheus.security_group_id
+
+  from_port   = 9100
+  to_port     = 9100
+  ip_protocol = "tcp"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "prod_node_exporter" {
+  security_group_id = module.prod_env.security_group_id
+
+  description                  = "Allow Prometheus to scrape prod Node Exporter"
+  referenced_security_group_id = module.prometheus.security_group_id
+
+  from_port   = 9100
+  to_port     = 9100
+  ip_protocol = "tcp"
+}
 # ============================================================
 # STAGE HOST-BASED ROUTING
 # ============================================================

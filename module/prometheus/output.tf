@@ -17,3 +17,7 @@ output "target_group_arn" {
   description = "Prometheus target group ARN"
   value       = aws_lb_target_group.prometheus.arn
 }
+output "security_group_id" {
+  description = "Security group ID of the Prometheus instance"
+  value       = aws_security_group.prometheus.id
+}
