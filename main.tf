@@ -228,6 +228,56 @@ module "ansible" {
 
   nexus_deploy_reader_parameter_arn = "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/devops-platform/nexus/deploy-reader-password"
 }
+
+# ============================================================
+# PROMETHEUS
+# ============================================================
+
+module "prometheus" {
+  source = "./module/prometheus"
+
+  project_name = var.project_name
+  vpc_id       = module.vpc.vpc_id
+  subnet_id    = module.vpc.public_subnet_id
+
+  platform_alb_security_group_id = module.platform_alb.security_group_id
+}
+
+
+# ============================================================
+# PROMETHEUS HOST-BASED ROUTING
+# ============================================================
+
+resource "aws_lb_listener_rule" "prometheus" {
+  listener_arn = module.platform_alb.listener_arn
+  priority     = 70
+
+  action {
+    type             = "forward"
+    target_group_arn = module.prometheus.target_group_arn
+  }
+
+  condition {
+    host_header {
+      values = ["prometheus.ferdeve.fit"]
+    }
+  }
+}
+# ============================================================
+# PROMETHEUS DNS
+# ============================================================
+
+resource "aws_route53_record" "prometheus" {
+  zone_id = module.platform_alb.hosted_zone_id
+  name    = "prometheus.ferdeve.fit"
+  type    = "A"
+
+  alias {
+    name                   = module.platform_alb.alb_dns_name
+    zone_id                = module.platform_alb.alb_zone_id
+    evaluate_target_health = true
+  }
+}
 # ============================================================
 # STAGE ENVIRONMENT
 # ============================================================
