@@ -1,0 +1,18 @@
+---
+- name: Roll back Pet Adoption application
+  hosts: "{{ target_env | default('stage') }}"
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Validate rollback image tag
+      ansible.builtin.assert:
+        that:
+          - app_image_tag is defined
+          - app_image_tag | length > 0
+        fail_msg: >-
+          app_image_tag is required for rollback.
+          Supply a previously deployed immutable image tag.
+
+  roles:
+    - app
