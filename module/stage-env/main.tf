@@ -56,6 +56,10 @@ resource "aws_security_group" "stage" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  lifecycle {
+    ignore_changes = [ingress]
+  }
+
   tags = {
     Name        = "${var.project_name}-stage-sg"
     Project     = var.project_name

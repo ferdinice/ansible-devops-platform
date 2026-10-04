@@ -52,6 +52,10 @@ resource "aws_security_group" "prod" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  lifecycle {
+    ignore_changes = [ingress]
+  }
+
   tags = {
     Name        = "${var.project_name}-prod-sg"
     Project     = var.project_name

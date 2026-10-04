@@ -3,7 +3,7 @@ set -euxo pipefail
 
 exec > >(tee /var/log/prometheus-userdata.log | logger -t user-data -s 2>/dev/console) 2>&1
 
-PROMETHEUS_VERSION="3.7.1"
+PROMETHEUS_VERSION="3.7.2"
 
 apt-get update -y
 apt-get install -y wget tar
@@ -39,6 +39,62 @@ scrape_configs:
     static_configs:
       - targets:
           - "localhost:9090"
+
+  - job_name: "stage-nodes"
+    ec2_sd_configs:
+      - region: eu-west-3
+        port: 9100
+        filters:
+          - name: tag:Project
+            values:
+              - ansible-devops-platform
+          - name: tag:Environment
+            values:
+              - stage
+          - name: tag:Role
+            values:
+              - application
+          - name: instance-state-name
+            values:
+              - running
+
+    relabel_configs:
+      - source_labels: [__meta_ec2_private_ip]
+        target_label: instance
+
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: name
+
+      - target_label: environment
+        replacement: stage
+
+  - job_name: "prod-nodes"
+    ec2_sd_configs:
+      - region: eu-west-3
+        port: 9100
+        filters:
+          - name: tag:Project
+            values:
+              - ansible-devops-platform
+          - name: tag:Environment
+            values:
+              - prod
+          - name: tag:Role
+            values:
+              - application
+          - name: instance-state-name
+            values:
+              - running
+
+    relabel_configs:
+      - source_labels: [__meta_ec2_private_ip]
+        target_label: instance
+
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: name
+
+      - target_label: environment
+        replacement: prod
 EOF
 
 chown -R prometheus:prometheus /etc/prometheus

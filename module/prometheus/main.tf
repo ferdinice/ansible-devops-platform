@@ -98,6 +98,31 @@ resource "aws_iam_role_policy_attachment" "prometheus_ssm" {
   role       = aws_iam_role.prometheus.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
+# ============================================================
+# EC2 SERVICE DISCOVERY PERMISSION
+# ============================================================
+
+resource "aws_iam_role_policy" "prometheus_ec2_discovery" {
+  name = "${var.project_name}-prometheus-ec2-discovery"
+  role = aws_iam_role.prometheus.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Sid    = "EC2ServiceDiscovery"
+        Effect = "Allow"
+
+        Action = [
+          "ec2:DescribeInstances"
+        ]
+
+        Resource = "*"
+      }
+    ]
+  })
+}
 
 
 # ============================================================
