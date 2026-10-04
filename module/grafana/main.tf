@@ -1,15 +1,15 @@
 # ============================================================
-# PROMETHEUS MODULE
+# GRAFANA MODULE
 # ============================================================
 
 
 # ============================================================
-# LATEST UBUNTU 24.04 LTS AMI
+# UBUNTU 24.04 LTS AMI
 # ============================================================
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  owners      = ["099720109477"]
 
   filter {
     name   = "name"
@@ -29,28 +29,20 @@ data "aws_ami" "ubuntu" {
 
 
 # ============================================================
-# PROMETHEUS SECURITY GROUP
+# GRAFANA SECURITY GROUP
 # ============================================================
 
-resource "aws_security_group" "prometheus" {
-  name        = "${var.project_name}-prometheus-sg"
-  description = "Security group for Prometheus"
+resource "aws_security_group" "grafana" {
+  name        = "${var.project_name}-grafana-sg"
+  description = "Security group for Grafana"
   vpc_id      = var.vpc_id
 
   ingress {
-    description     = "Prometheus traffic from shared platform ALB"
-    from_port       = 9090
-    to_port         = 9090
+    description     = "Grafana traffic from shared platform ALB"
+    from_port       = 3000
+    to_port         = 3000
     protocol        = "tcp"
     security_groups = [var.platform_alb_security_group_id]
-  }
-
-  ingress {
-    description     = "Prometheus traffic from Grafana"
-    from_port       = 9090
-    to_port         = 9090
-    protocol        = "tcp"
-    security_groups = [var.grafana_security_group_id]
   }
 
   egress {
@@ -62,18 +54,18 @@ resource "aws_security_group" "prometheus" {
   }
 
   tags = {
-    Name    = "${var.project_name}-prometheus-sg"
+    Name    = "${var.project_name}-grafana-sg"
     Project = var.project_name
   }
 }
 
 
 # ============================================================
-# PROMETHEUS IAM ROLE
+# GRAFANA IAM ROLE / SSM
 # ============================================================
 
-resource "aws_iam_role" "prometheus" {
-  name = "${var.project_name}-prometheus-role"
+resource "aws_iam_role" "grafana" {
+  name = "${var.project_name}-grafana-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -92,78 +84,50 @@ resource "aws_iam_role" "prometheus" {
   })
 
   tags = {
-    Name    = "${var.project_name}-prometheus-role"
+    Name    = "${var.project_name}-grafana-role"
     Project = var.project_name
   }
 }
 
-
-# ============================================================
-# SSM PERMISSION
-# ============================================================
-
-resource "aws_iam_role_policy_attachment" "prometheus_ssm" {
-  role       = aws_iam_role.prometheus.name
+resource "aws_iam_role_policy_attachment" "grafana_ssm" {
+  role       = aws_iam_role.grafana.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
-# ============================================================
-# EC2 SERVICE DISCOVERY PERMISSION
-# ============================================================
 
-resource "aws_iam_role_policy" "prometheus_ec2_discovery" {
-  name = "${var.project_name}-prometheus-ec2-discovery"
-  role = aws_iam_role.prometheus.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Sid    = "EC2ServiceDiscovery"
-        Effect = "Allow"
-
-        Action = [
-          "ec2:DescribeInstances"
-        ]
-
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-
-# ============================================================
-# PROMETHEUS INSTANCE PROFILE
-# ============================================================
-
-resource "aws_iam_instance_profile" "prometheus" {
-  name = "${var.project_name}-prometheus-profile"
-  role = aws_iam_role.prometheus.name
+resource "aws_iam_instance_profile" "grafana" {
+  name = "${var.project_name}-grafana-profile"
+  role = aws_iam_role.grafana.name
 
   tags = {
-    Name    = "${var.project_name}-prometheus-profile"
+    Name    = "${var.project_name}-grafana-profile"
     Project = var.project_name
   }
 }
 
 
 # ============================================================
-# PROMETHEUS EC2
+# GRAFANA EC2
 # ============================================================
 
-resource "aws_instance" "prometheus" {
+resource "aws_instance" "grafana" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
 
   subnet_id              = var.subnet_id
-  vpc_security_group_ids = [aws_security_group.prometheus.id]
+  vpc_security_group_ids = [aws_security_group.grafana.id]
 
   associate_public_ip_address = true
 
-  iam_instance_profile = aws_iam_instance_profile.prometheus.name
+  iam_instance_profile = aws_iam_instance_profile.grafana.name
 
-  user_data                   = file("${path.module}/prometheus_userdata.sh")
+  user_data = templatefile(
+    "${path.module}/grafana_userdata.sh",
+    {
+      prometheus_ip  = var.prometheus_private_ip
+      dashboard_json = file("${path.module}/dashboards/platform-overview.json")
+    }
+  )
+
   user_data_replace_on_change = true
 
   root_block_device {
@@ -178,27 +142,27 @@ resource "aws_instance" "prometheus" {
   }
 
   tags = {
-    Name        = "${var.project_name}-prometheus"
+    Name        = "${var.project_name}-grafana"
     Project     = var.project_name
-    Role        = "prometheus"
+    Role        = "grafana"
     Environment = "management"
   }
 }
 
 
 # ============================================================
-# PROMETHEUS TARGET GROUP
+# GRAFANA TARGET GROUP
 # ============================================================
 
-resource "aws_lb_target_group" "prometheus" {
-  name     = "prometheus-target-group"
-  port     = 9090
+resource "aws_lb_target_group" "grafana" {
+  name     = "grafana-target-group"
+  port     = 3000
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
   health_check {
     enabled             = true
-    path                = "/-/healthy"
+    path                = "/api/health"
     protocol            = "HTTP"
     port                = "traffic-port"
     healthy_threshold   = 2
@@ -209,18 +173,18 @@ resource "aws_lb_target_group" "prometheus" {
   }
 
   tags = {
-    Name    = "${var.project_name}-prometheus-tg"
+    Name    = "${var.project_name}-grafana-tg"
     Project = var.project_name
   }
 }
 
 
 # ============================================================
-# ATTACH PROMETHEUS TO TARGET GROUP
+# ATTACH GRAFANA TO TARGET GROUP
 # ============================================================
 
-resource "aws_lb_target_group_attachment" "prometheus" {
-  target_group_arn = aws_lb_target_group.prometheus.arn
-  target_id        = aws_instance.prometheus.id
-  port             = 9090
+resource "aws_lb_target_group_attachment" "grafana" {
+  target_group_arn = aws_lb_target_group.grafana.arn
+  target_id        = aws_instance.grafana.id
+  port             = 3000
 }

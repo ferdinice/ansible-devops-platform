@@ -9,14 +9,14 @@ variable "vpc_id" {
 }
 
 variable "subnet_id" {
-  description = "Subnet for the Prometheus EC2 instance"
+  description = "Subnet for the Grafana EC2 instance"
   type        = string
 }
 
 variable "instance_type" {
-  description = "EC2 instance type for Prometheus"
+  description = "EC2 instance type for Grafana"
   type        = string
-  default     = "t3.small"
+  default     = "t3.micro"
 }
 
 variable "platform_alb_security_group_id" {
@@ -24,7 +24,7 @@ variable "platform_alb_security_group_id" {
   type        = string
 }
 
-variable "grafana_security_group_id" {
-  description = "Security group ID of the Grafana instance"
+variable "prometheus_private_ip" {
+  description = "Private IP address of the Prometheus server"
   type        = string
 }

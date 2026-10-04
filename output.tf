@@ -88,3 +88,17 @@ output "prometheus_instance_id" {
   description = "Prometheus EC2 instance ID"
   value       = module.prometheus.prometheus_instance_id
 }
+
+# ============================================================
+# GRAFANA
+# ============================================================
+
+output "grafana_url" {
+  description = "Secure Grafana URL"
+  value       = "https://grafana.ferdeve.fit"
+}
+
+output "grafana_instance_id" {
+  description = "Grafana EC2 instance ID"
+  value       = module.grafana.grafana_instance_id
+}
