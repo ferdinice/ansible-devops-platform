@@ -20,6 +20,7 @@ apt-get update -y
 apt-get install -y \
   fontconfig \
   openjdk-21-jre \
+  openjdk-17-jdk-headless \
   curl \
   ca-certificates \
   unzip \
@@ -91,7 +92,41 @@ echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.
 apt-get update -y
 
 apt-get install -y jenkins
+systemctl stop jenkins
 
+
+# ============================================================
+# JENKINS PLUGINS
+# ============================================================
+
+echo "Installing Jenkins pipeline plugins..."
+
+PLUGIN_MANAGER_URL=$(curl -fsSL \
+  https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases/tags/2.15.0 \
+  | grep browser_download_url \
+  | grep '\\.jar"' \
+  | head -1 \
+  | cut -d '"' -f 4)
+
+test -n "$PLUGIN_MANAGER_URL"
+
+curl -fsSL \
+  -o /tmp/jenkins-plugin-manager.jar \
+  "$PLUGIN_MANAGER_URL"
+
+java -jar /tmp/jenkins-plugin-manager.jar \
+  --war /usr/share/java/jenkins.war \
+  --plugin-download-directory /var/lib/jenkins/plugins \
+  --plugins \
+    git \
+    workflow-aggregator \
+    credentials-binding \
+    sonar \
+    dependency-check-jenkins-plugin
+
+chown -R jenkins:jenkins /var/lib/jenkins/plugins
+
+echo "Jenkins plugin installation completed."
 
 # ============================================================
 # JENKINS DOCKER ACCESS
