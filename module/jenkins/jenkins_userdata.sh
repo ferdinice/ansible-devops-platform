@@ -101,18 +101,9 @@ systemctl stop jenkins
 
 echo "Installing Jenkins pipeline plugins..."
 
-PLUGIN_MANAGER_URL=$(curl -fsSL \
-  https://api.github.com/repos/jenkinsci/plugin-installation-manager-tool/releases/tags/2.15.0 \
-  | grep browser_download_url \
-  | grep '\\.jar"' \
-  | head -1 \
-  | cut -d '"' -f 4)
-
-test -n "$PLUGIN_MANAGER_URL"
-
-curl -fsSL \
+curl -fsSL --retry 3 --connect-timeout 15 \
   -o /tmp/jenkins-plugin-manager.jar \
-  "$PLUGIN_MANAGER_URL"
+  https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.15.0/jenkins-plugin-manager-2.15.0.jar
 
 java -jar /tmp/jenkins-plugin-manager.jar \
   --war /usr/share/java/jenkins.war \
