@@ -27,18 +27,32 @@ if [[ -z "$DB_PASSWORD" ]]; then
   exit 1
 fi
 
-# PostgreSQL's psql variable quoting safely handles password characters.
-# The password is supplied through stdin rather than command arguments.
-export SONAR_RESTORE_DB_PASSWORD="$DB_PASSWORD"
+# Build a restricted SQL file without exposing credentials
+# through process arguments or command output.
+SQL_FILE="$(mktemp)"
+chmod 600 "$SQL_FILE"
+trap 'rm -f "$SQL_FILE"' EXIT
 
-runuser -u postgres -- \
-  psql -X -v ON_ERROR_STOP=1 \
-  -d postgres \
-  -v db_password="$SONAR_RESTORE_DB_PASSWORD" \
-  <<'SQL'
-\set QUIET on
-ALTER ROLE sonar WITH PASSWORD :'db_password';
-SQL
+export DB_PASSWORD SQL_FILE
+
+python3 - <<'PYSQL'
+import os
+
+password = os.environ["DB_PASSWORD"]
+sql_file = os.environ["SQL_FILE"]
+
+# Quote the PostgreSQL string literal safely.
+quoted = "'" + password.replace("'", "''") + "'"
+
+with open(sql_file, "w") as f:
+    f.write("ALTER ROLE sonar WITH PASSWORD " + quoted + ";\\n")
+PYSQL
+
+# Keep the SQL file private to root (mode 600).
+runuser -u postgres -- psql -X -q -v ON_ERROR_STOP=1   -d postgres < "$SQL_FILE" >/dev/null
+
+rm -f "$SQL_FILE"
+trap - EXIT
 
 # Verify the restored credentials against PostgreSQL.
 # Use TCP so PostgreSQL checks password authentication.
