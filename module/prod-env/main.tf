@@ -110,8 +110,13 @@ resource "aws_launch_template" "prod" {
 
     hostnamectl set-hostname prod-node
 
+    export DEBIAN_FRONTEND=noninteractive
+
     apt-get update -y
-    apt-get install -y python3
+    apt-get install -y python3 docker.io
+
+    systemctl enable docker
+    systemctl start docker
 
     echo "Production node bootstrap complete."
   EOF
