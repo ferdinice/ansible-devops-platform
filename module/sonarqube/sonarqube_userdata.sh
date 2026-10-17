@@ -163,3 +163,24 @@ echo "SonarQube installation completed."
 echo "========================================"
 
 systemctl status sonarqube --no-pager
+# Verify SonarQube is ready to accept API requests.
+echo "Waiting for SonarQube API readiness..."
+
+SONAR_READY=false
+
+for attempt in $(seq 1 60); do
+  if curl --silent --fail --max-time 5     http://127.0.0.1:9000/api/system/status     | grep -q '"status":"UP"'; then
+    SONAR_READY=true
+    break
+  fi
+
+  sleep 10
+done
+
+if [ "$SONAR_READY" != "true" ]; then
+  echo "ERROR: SonarQube failed its readiness check."
+  journalctl -u sonarqube -n 50 --no-pager
+  exit 1
+fi
+
+echo "SonarQube API is UP."
