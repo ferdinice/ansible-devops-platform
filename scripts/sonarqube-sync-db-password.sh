@@ -45,7 +45,7 @@ sql_file = os.environ["SQL_FILE"]
 quoted = "'" + password.replace("'", "''") + "'"
 
 with open(sql_file, "w") as f:
-    f.write("ALTER ROLE sonar WITH PASSWORD " + quoted + ";\\n")
+    f.write("ALTER ROLE sonar WITH PASSWORD " + quoted + ";\n")
 PYSQL
 
 # Keep the SQL file private to root (mode 600).
