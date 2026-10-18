@@ -99,6 +99,33 @@ resource "aws_iam_role_policy_attachment" "sonarqube_ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# ============================================================
+# SONARQUBE BACKUP RESTORE PERMISSION
+# ============================================================
+
+resource "aws_iam_role_policy" "sonarqube_backup_read" {
+  name = "${var.project_name}-sonarqube-backup-read"
+  role = aws_iam_role.sonarqube.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Sid    = "ReadSonarQubeBackup"
+        Effect = "Allow"
+
+        Action = [
+          "s3:GetObject"
+        ]
+
+        Resource = [
+          "arn:aws:s3:::ferdinice-devops-secure-backups-740994137090/sonarqube/*"
+        ]
+      }
+    ]
+  })
+}
 
 # ============================================================
 # SONARQUBE INSTANCE PROFILE

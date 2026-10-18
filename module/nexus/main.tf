@@ -274,6 +274,16 @@ resource "aws_iam_role_policy" "nexus_registry_credentials" {
           "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/devops-platform/nexus/ci-writer-password",
           "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/devops-platform/nexus/deploy-reader-password"
         ]
+      },
+      {
+        Sid    = "ReadNexusBackup"
+        Effect = "Allow"
+
+        Action = [
+          "s3:GetObject"
+        ]
+
+        Resource = "arn:aws:s3:::ferdinice-devops-secure-backups-740994137090/nexus/*"
       }
     ]
   })

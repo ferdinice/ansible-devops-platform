@@ -260,6 +260,16 @@ resource "aws_iam_role_policy" "jenkins_ansible_deployment" {
         ]
 
         Resource = "*"
+      },
+      {
+        Sid    = "ReadJenkinsBackup"
+        Effect = "Allow"
+
+        Action = [
+          "s3:GetObject"
+        ]
+
+        Resource = "arn:aws:s3:::ferdinice-devops-secure-backups-740994137090/jenkins/*"
       }
     ]
   })
