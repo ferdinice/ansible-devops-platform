@@ -44,3 +44,12 @@ node_modules/
 
 # Logs
 *.log
+
+# Local recovery artifacts
+/backups/
+/backup-restore-policy.json
+/jenkins-check.json
+/jenkins-restore-policy.json
+/nexus-restore-policy.json
+/sonarqube-restore-policy.json
+/false]]
