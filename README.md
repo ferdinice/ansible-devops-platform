@@ -6,36 +6,27 @@ A hands-on AWS DevSecOps project that provisions infrastructure using Terraform 
 
 ## Architecture
 
-```text
-GitHub (Pet Adoption application)
-            |
-            v
-Jenkins: checkout -> Maven tests -> SonarQube / quality gate
-         -> OWASP Dependency Check -> Docker build
-            |
-            v
-Nexus Docker registry (immutable build number + Git SHA tag)
-            |
-            v
-Jenkins -> AWS SSM Run Command -> Ansible controller
-                                     |
-                         AWS EC2 dynamic inventory
-                                     |
-                    configure.yml / deploy.yml
-                                     |
-                       +-------------+------------+
-                       |                          |
-                  Staging EC2                Production EC2
-                  health check               manual Jenkins approval
-                       |                      then health check
-                       +-------------+------------+
-                                     |
-                    ALB + Route 53 + HTTPS
+### Enterprise Platform Overview
 
-          Prometheus -> Node Exporter -> Grafana
-```
+![Enterprise Architecture](docs/diagrams/01-professional-platform-overview.png)
 
-Terraform manages the VPC, public/private subnets, NAT gateway, security groups, EC2 and Auto Scaling Groups, load balancer, IAM and relevant Route 53 records. Staging and production workloads run in private subnets. Ansible uses SSH within the private network to configure the nodes; Jenkins uses SSM rather than SSH to trigger the controller.
+### AWS Networking and Service Connections
+
+![AWS Network Architecture](docs/diagrams/02-verified-network-connections.png)
+
+### Combined Architecture
+
+![Combined Ansible Architecture](docs/diagrams/ansible_devops_platform_on_aws.png)
+
+The diagrams represent the platform validated before its cost-control teardown. Terraform and Ansible source code remain authoritative where visual representations differ.
+
+**Deployment:** GitHub → Jenkins → Maven, SonarQube and OWASP checks → Docker build → Nexus registry → AWS SSM → Ansible controller → staging and production EC2 instances.
+
+**Application traffic:** Route 53 → HTTPS Application Load Balancer → staging or production target groups → Docker applications in private subnets.
+
+**Monitoring:** Prometheus pulls metrics from staging and production Node Exporters on port `9100`. Grafana queries Prometheus for dashboards.
+
+Terraform provisions the VPC, public/private subnets, NAT gateway, security groups, EC2 instances, Auto Scaling Groups, ALB, IAM and Route 53 records. Ansible uses private SSH to configure application hosts, while Jenkins uses AWS SSM to invoke the controller.
 
 ## Technologies
 
